@@ -62,7 +62,8 @@ class ORLDataset:
             test_set.append(person_images[train_image_number:])
             test_label.append([label] * (10 - train_image_number))
 
-        return train_set, train_label, test_set, test_label
+        return (np.array(train_set), np.array(train_label),
+                np.array(test_set), np.array(test_label))
 
 
 if __name__ == '__main__':
