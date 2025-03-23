@@ -1,13 +1,15 @@
 import numpy as np
 from scipy.linalg import eigh
 from tqdm import tqdm
+from sklearn.metrics import accuracy_score
+
 
 np.random.seed(42)
 
 
 class MDA:
 
-    def __init__(self, input_dim, output_dim, epochs, epsilon=1e-1):
+    def __init__(self, knn, input_dim, output_dim, epochs, epsilon=1e-1):
 
         self.input_dim = input_dim
         self.output_dim = output_dim
@@ -15,6 +17,7 @@ class MDA:
         self.epochs = epochs
         self.dim = len(input_dim)
         self.epsilon = epsilon
+        self.knn = knn
 
     def fit(self, images, labels):
         tensor = np.stack(images, axis=-1)  # [m_0,...,m_n,N]
@@ -50,6 +53,19 @@ class MDA:
             if mode != exclude_dim:
                 tensor = self.mode_dot(tensor, u.T, mode)
         return tensor
+    
+    def mda_project(self, images, labels):
+        U = self.U
+        X = np.stack(images)
+        X = np.tensordot(X, U[0], axes=([1], [0]))
+        X = np.tensordot(X, U[1], axes=([1], [0]))
+        
+        X = X.reshape(-1,*self.output_dim)
+
+        X = X.reshape(X.shape[0], -1)
+        self.knn.fit(X, labels)
+        acc = accuracy_score(self.knn.predict(X), labels)
+        return acc
 
     @staticmethod
     def mode_dot(tensor, matrix, mode):
@@ -113,17 +129,17 @@ class MDA:
     
 
 if __name__ == "__main__":
-    num_samples = 10
-    input_dim = [10, 10, 20]
-    output_dim = [5, 5, 10]
+    input_dim = np.array([112, 92])
+    output_dim = np.array([20, 10])
     num_classes = 5
     epochs = 10
 
-    images = [np.random.rand(*input_dim) for _ in range(num_samples)]
-    labels = np.random.randint(0, num_classes, size=num_samples)
+    images = np.array([np.random.rand(*input_dim)])
+    labels = np.random.randint(0, num_classes, size=images.shape[0])
 
     # Initialize and train the MDA model
     mda = MDA(input_dim=input_dim, output_dim=output_dim, epochs=epochs)
     mda.fit(images, labels)
+    print(mda.project_tensor(images).shape)
 
     print("MDA training completed.")

@@ -22,17 +22,13 @@ def arg_parser():
 def train(args, train_set, train_label):
     print(train_set[0].shape)
     print(train_label.shape)
-    knn = KNeighborsClassifier(n_neighbors=3)
-    model = MDA(knn=knn,
-                input_dim=list(train_set[0].shape),
+    model = MDA(input_dim=list(train_set[0].shape),
                 output_dim=[10, 20],
                 epochs=args.epochs,
                 epsilon=args.epsilon)
     model.fit(train_set, train_label)
 
-    acc =  model.mda_project(train_set, train_label)
-
-    return model, acc
+    return model
 
 
 def main():
@@ -43,9 +39,13 @@ def main():
     train_set = train_set.reshape(train_set.shape[0] * train_set.shape[1], *train_set.shape[2:])
     train_label = train_label.reshape(train_label.shape[0] * train_label.shape[1], *train_label.shape[2:])
 
-    trained_model, train_acc = train(args, train_set, train_label)
-    
-    print(f"Train accuracy: {train_acc}")
+    train_set = train_set.reshape(train_set.shape[0], -1)
+    print(train_set.shape)
+
+    knn = KNeighborsClassifier(n_neighbors=3)
+    knn.fit(train_set, train_label)
+
+    print(f"Train accuracy: {accuracy_score(knn.predict(train_set), train_label)}")
 
 
 if __name__ == '__main__':

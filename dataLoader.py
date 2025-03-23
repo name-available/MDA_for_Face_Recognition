@@ -67,4 +67,12 @@ class ORLDataset:
 
 
 if __name__ == '__main__':
-    pass
+    dataset = ORLDataset("data/ORL")
+    dataset.load_data()
+    train_set, train_label, test_set, test_label = dataset.split_personal_image(5)
+
+
+    print(f"Train data shape: {train_set.shape}")
+    print(f"Train labels shape: {train_label.shape}")
+    print(f"Test data shape: {test_set.shape}")
+    print(f"Test labels shape: {test_label.shape}")
